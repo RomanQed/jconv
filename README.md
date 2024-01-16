@@ -17,7 +17,7 @@ To install it, you will need:
 
 ```Groovy
 dependencies {
-    implementation group: 'com.github.romanqed', name: 'jsm', version: 'LATEST'
+    implementation group: 'com.github.romanqed', name: 'jconv', version: 'LATEST'
 }
 ```
 
@@ -26,7 +26,7 @@ dependencies {
 ```
 <dependency>
     <groupId>com.github.romanqed</groupId>
-    <artifactId>jsm</artifactId>
+    <artifactId>jconv</artifactId>
     <version>LATEST</version>
 </dependency>
 ```
@@ -45,7 +45,7 @@ dependencies {
 
 * **[RomanQed](https://github.com/RomanQed)** - *Main work*
 
-See also the list of [contributors](https://github.com/RomanQed/jsm/contributors)
+See also the list of [contributors](https://github.com/RomanQed/jconv/contributors)
 who participated in this project.
 
 ## License
