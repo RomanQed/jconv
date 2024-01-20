@@ -1,6 +1,5 @@
 package com.github.romanqed.jconv;
 
-import com.github.romanqed.jfunc.Runnable1;
 import com.github.romanqed.jfunc.Runnable2;
 
 /**
@@ -19,7 +18,7 @@ public interface PipelineBuilder<T> {
      * @param runnable pipeline function
      * @return {@link PipelineBuilder} instance
      */
-    PipelineBuilder<T> add(Runnable2<T, AsyncRunnable1<T>> runnable);
+    PipelineBuilder<T> add(Runnable2<T, Task<T>> runnable);
 
     /**
      * Removes the last function added to the pipeline.
@@ -38,7 +37,7 @@ public interface PipelineBuilder<T> {
     /**
      * Builds a pipeline.
      *
-     * @return {@link Runnable1} instance, containing built pipeline
+     * @return {@link Task} instance, containing built pipeline
      */
-    Runnable1<T> build();
+    Task<T> build();
 }

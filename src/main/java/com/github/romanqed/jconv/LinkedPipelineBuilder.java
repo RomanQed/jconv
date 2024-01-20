@@ -1,22 +1,19 @@
 package com.github.romanqed.jconv;
 
-import com.github.romanqed.jfunc.Runnable1;
 import com.github.romanqed.jfunc.Runnable2;
 
 import java.util.Stack;
 
-abstract class AbstractPipelineBuilder<T> implements PipelineBuilder<T> {
-    protected final Stack<Task<T>> stack;
+public final class LinkedPipelineBuilder<T> implements PipelineBuilder<T> {
+    private final Stack<LinkedTask<T>> stack;
 
-    protected AbstractPipelineBuilder() {
+    public LinkedPipelineBuilder() {
         this.stack = new Stack<>();
     }
 
-    protected abstract Task<T> create(Runnable2<T, AsyncRunnable1<T>> body);
-
     @Override
-    public PipelineBuilder<T> add(Runnable2<T, AsyncRunnable1<T>> runnable) {
-        var task = create(runnable);
+    public PipelineBuilder<T> add(Runnable2<T, Task<T>> runnable) {
+        var task = new LinkedTask<>(runnable);
         if (!stack.isEmpty()) {
             stack.peek().setNext(task);
         }
@@ -41,10 +38,9 @@ abstract class AbstractPipelineBuilder<T> implements PipelineBuilder<T> {
     }
 
     @Override
-    public Runnable1<T> build() {
+    public Task<T> build() {
         if (stack.isEmpty()) {
-            return t -> {
-            };
+            return Task.empty();
         }
         var ret = stack.firstElement();
         stack.clear();
