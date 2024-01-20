@@ -32,6 +32,7 @@ dependencies {
 ```
 
 ## Example
+
 ### Common example
 
 ```Java
@@ -63,7 +64,8 @@ public class Main {
 }
 ```
 
-This example will print 
+This example will print
+
 ```
 { - 1
 10 - 2

@@ -4,6 +4,11 @@ import com.github.romanqed.jfunc.Runnable2;
 
 import java.util.Stack;
 
+/**
+ * {@link PipelineBuilder} implementation, which creates a linked chain of tasks.
+ *
+ * @param <T> pipeline context type
+ */
 public final class LinkedPipelineBuilder<T> implements PipelineBuilder<T> {
     private final Stack<LinkedTask<T>> stack;
 
