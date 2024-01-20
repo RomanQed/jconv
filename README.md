@@ -82,9 +82,8 @@ import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
-        var builder = new LinkedPipelineBuilder<Void>();
+        var builder = new LinkedPipelineBuilder<>();
         var pipeline = builder
-                // The code below will be executed inside the pipeline in the following order:
                 .add((c, n) -> {
                     try {
                         n.run(null);
@@ -112,6 +111,30 @@ java.io.IOException
 	at com.github.romanqed.jconv/com.github.romanqed.jconv.Main.lambda$main$0(Main.java:12)
 	at com.github.romanqed.jconv/com.github.romanqed.jconv.LinkedTask.accept(LinkedTask.java:32)
 	at com.github.romanqed.jconv/com.github.romanqed.jconv.Main.main(Main.java:22)
+```
+
+### Short-circuiting
+
+```Java
+package com.github.romanqed.jconv;
+
+public class Main {
+    public static void main(String[] args) {
+        var builder = new LinkedPipelineBuilder<Integer>();
+        var pipeline = builder
+                .add((c, n) -> {
+                    if (c > 0) {
+                        n.run(c);
+                    }
+                })
+                .add((c, n) -> {
+                    System.out.println(c);
+                })
+                .build();
+        pipeline.accept(5); // <-- This call will print "5"
+        pipeline.accept(0); // <-- This call will print nothing
+    }
+}
 ```
 
 ## Built With
