@@ -3,7 +3,7 @@ package com.github.romanqed.jconv;
 import com.github.romanqed.jfunc.Runnable2;
 
 import java.util.Deque;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.util.LinkedList;
 
 /**
  * {@link PipelineBuilder} implementation, which creates a linked chain of tasks.
@@ -14,7 +14,7 @@ public final class LinkedPipelineBuilder<T> implements PipelineBuilder<T> {
     private final Deque<LinkedTask<T>> deque;
 
     public LinkedPipelineBuilder() {
-        this.deque = new LinkedBlockingDeque<>();
+        this.deque = new LinkedList<>();
     }
 
     @Override
