@@ -30,6 +30,8 @@ final class LinkedTask<T> implements Task<T> {
     public void accept(T t) {
         try {
             this.body.run(t, this.next);
+        } catch (Error | RuntimeException e) {
+            throw e;
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

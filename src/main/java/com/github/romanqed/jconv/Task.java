@@ -63,6 +63,8 @@ public interface Task<T> extends Runnable1<T>, Consumer<T> {
                 try {
                     first.run(t);
                     second.run(t);
+                } catch (Error | RuntimeException e) {
+                    throw e;
                 } catch (Throwable e) {
                     throw new RuntimeException(e);
                 }
@@ -85,6 +87,8 @@ public interface Task<T> extends Runnable1<T>, Consumer<T> {
     default void accept(T t) {
         try {
             this.run(t);
+        } catch (Error | RuntimeException e) {
+            throw e;
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
