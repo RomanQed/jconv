@@ -6,7 +6,7 @@ Flexible and lightweight pipeline implementation for java 11+ in style ASP.NET m
 
 To install it, you will need:
 
-* java 11+
+* Java 11+
 * Maven/Gradle
 
 ### Features
