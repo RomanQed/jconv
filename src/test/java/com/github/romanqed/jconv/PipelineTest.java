@@ -1,11 +1,13 @@
-import com.github.romanqed.jconv.LinkedPipelineBuilder;
-import com.github.romanqed.jconv.PipelineBuilder;
-import com.github.romanqed.jconv.Task;
+package com.github.romanqed.jconv;
+
+import com.github.romanqed.jfunc.Runnable1;
 import com.github.romanqed.jfunc.Runnable2;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public final class PipelineTest extends Assertions {
+import static org.junit.jupiter.api.Assertions.*;
+
+public final class PipelineTest {
+
     public void testBuilder(PipelineBuilder<Context> builder) throws Throwable {
         var task = builder
                 .add((context, next) -> {
@@ -31,12 +33,12 @@ public final class PipelineTest extends Assertions {
 
     @Test
     public void testLinkedBuilder() throws Throwable {
-        testBuilder(new LinkedPipelineBuilder<>());
+        testBuilder(new ClosedPipelineBuilder<>());
     }
 
     @Test
     public void testLinkedExceptionHandling() {
-        testExceptionHandling(new LinkedPipelineBuilder<>());
+        testExceptionHandling(new ClosedPipelineBuilder<>());
     }
 
     public void testExceptionHandling(PipelineBuilder<Context> builder) {
@@ -54,35 +56,19 @@ public final class PipelineTest extends Assertions {
                     throw exception;
                 })
                 .build();
-        assertAll(
-                () -> {
-                    var context = new Context();
-                    Exception e = null;
-                    try {
-                        task.run(context);
-                    } catch (Exception e1) {
-                        e = e1;
-                    }
-                    assertEquals(exception, e);
-                    assertEquals(exception, context.exception);
-                },
-                () -> {
-                    var context = new Context();
-                    RuntimeException e = null;
-                    try {
-                        task.accept(context);
-                    } catch (RuntimeException e1) {
-                        e = e1;
-                    }
-                    assertNotNull(e);
-                    assertEquals(exception, e.getCause());
-                    assertEquals(exception, context.exception);
-                }
-        );
+        var context = new Context();
+        var e = (Throwable) null;
+        try {
+            task.run(context);
+        } catch (Throwable e1) {
+            e = e1;
+        }
+        assertEquals(exception, e);
+        assertEquals(exception, context.exception);
     }
 
     public void testShortCircuiting(PipelineBuilder<Context> builder) {
-        var lambda = (Runnable2<Context, Task<Context>>) (context, next) -> {
+        var lambda = (Runnable2<Context, Runnable1<Context>>) (context, next) -> {
             if (context.value > 0) {
                 context.value -= 1;
                 next.run(context);
@@ -119,10 +105,10 @@ public final class PipelineTest extends Assertions {
 
     @Test
     public void testLinkedShortCircuiting() {
-        testShortCircuiting(new LinkedPipelineBuilder<>());
+        testShortCircuiting(new ClosedPipelineBuilder<>());
     }
 
-    static final class Context {
+    public static final class Context {
         Integer value = 0;
         Exception exception;
     }

@@ -45,7 +45,7 @@ jar {
                 'Build-Date': new SimpleDateFormat("yyyy-MM-dd").format(date),
                 'Build-Time': new SimpleDateFormat("HH:mm:ss.SSSZ").format(date),
                 'Built-By': 'Roman Bakaldin',
-                'Bundle-Name': 'Java Conveyor',
+                'Bundle-Name': 'Java Middleware',
                 'Bundle-Version': archiveVersion,
                 'Bundle-SymbolicName': archivesBaseName,
                 'Implementation-Title': archivesBaseName,
@@ -73,7 +73,8 @@ publishing {
             // Configure pom
             pom {
                 name.set('jconv')
-                description.set('Flexible and lightweight pipeline implementation for java 11+ in style ASP.NET middleware.')
+                description.set('Flexible and lightweight pipeline implementation ' +
+                        'for java 11+ in style ASP.NET middleware.')
                 url.set('https://github.com/RomanQed/jconv')
                 organization {
                     name.set('com.github.romanqed')
