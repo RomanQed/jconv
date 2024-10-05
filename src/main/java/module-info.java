@@ -1,4 +1,4 @@
-open module com.github.romanqed.jconv {
+module com.github.romanqed.jconv {
     // Imports
     requires com.github.romanqed.jfunc;
     // Exports

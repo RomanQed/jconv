@@ -1,5 +1,6 @@
 package com.github.romanqed.jconv;
 
+import com.github.romanqed.jfunc.Runnable1;
 import com.github.romanqed.jfunc.Runnable2;
 
 /**
@@ -8,7 +9,7 @@ import com.github.romanqed.jfunc.Runnable2;
  * Each function is added to the end of the pipeline, and the order of execution will
  * directly depend on the order of addition.
  *
- * @param <T> pipeline context type
+ * @param <T> the pipeline context type
  */
 public interface PipelineBuilder<T> {
 
@@ -18,7 +19,7 @@ public interface PipelineBuilder<T> {
      * @param runnable pipeline function
      * @return {@link PipelineBuilder} instance
      */
-    PipelineBuilder<T> add(Runnable2<T, Task<T>> runnable);
+    PipelineBuilder<T> add(Runnable2<T, Runnable1<T>> runnable);
 
     /**
      * Removes the last function added to the pipeline.
@@ -37,7 +38,7 @@ public interface PipelineBuilder<T> {
     /**
      * Builds a pipeline.
      *
-     * @return {@link Task} instance, containing built pipeline
+     * @return {@link Runnable1} instance, containing built pipeline
      */
-    Task<T> build();
+    Runnable1<T> build();
 }
