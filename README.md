@@ -36,11 +36,11 @@ dependencies {
 ### Common example
 
 ```Java
-package com.github.romanqed.jconv;
+import com.github.romanqed.jconv.PipelineBuilders;
 
 public class Main {
-    public static void main(String[] args) {
-        var builder = new LinkedPipelineBuilder<Integer>();
+    public static void main(String[] args) throws Throwable {
+        var builder = PipelineBuilders.<Integer>createClosed();
         var pipeline = builder
                 // The code below will be executed inside the pipeline in the following order:
                 .add((c, n) -> {
@@ -59,7 +59,7 @@ public class Main {
                     System.out.println(c); // This code will never be executed
                 })
                 .build();
-        pipeline.accept(10);
+        pipeline.run(10);
     }
 }
 ```
@@ -76,13 +76,13 @@ This example will print
 ### Exception handling
 
 ```Java
-package com.github.romanqed.jconv;
+import com.github.romanqed.jconv.PipelineBuilders;
 
 import java.io.IOException;
 
 public class Main {
-    public static void main(String[] args) {
-        var builder = new LinkedPipelineBuilder<>();
+    public static void main(String[] args) throws Throwable {
+        var builder = PipelineBuilders.createClosed();
         var pipeline = builder
                 .add((c, n) -> {
                     try {
@@ -93,10 +93,11 @@ public class Main {
                     }
                 })
                 .add((c, n) -> {
+                    var io = new IOException();
                     throw new IOException(); // Some I/O problem occurs here
                 })
                 .build();
-        pipeline.accept(null);
+        pipeline.run(null);
     }
 }
 ```
@@ -106,21 +107,21 @@ This example will print
 ```
 Catch IO exception: 
 java.io.IOException
-	at com.github.romanqed.jconv/com.github.romanqed.jconv.Main.lambda$main$1(Main.java:19)
-	at com.github.romanqed.jconv/com.github.romanqed.jconv.LinkedTask.run(LinkedTask.java:26)
-	at com.github.romanqed.jconv/com.github.romanqed.jconv.Main.lambda$main$0(Main.java:12)
-	at com.github.romanqed.jconv/com.github.romanqed.jconv.LinkedTask.accept(LinkedTask.java:32)
-	at com.github.romanqed.jconv/com.github.romanqed.jconv.Main.main(Main.java:22)
+	at Main.lambda$main$1(Main.java:20)
+	at com.github.romanqed.jconv/com.github.romanqed.jconv.LinkedRunnable.run(LinkedRunnable.java:26)
+	at Main.lambda$main$0(Main.java:13)
+	at com.github.romanqed.jconv/com.github.romanqed.jconv.LinkedRunnable.run(LinkedRunnable.java:26)
+	at Main.main(Main.java:23)
 ```
 
 ### Short-circuiting
 
 ```Java
-package com.github.romanqed.jconv;
+import com.github.romanqed.jconv.PipelineBuilders;
 
 public class Main {
-    public static void main(String[] args) {
-        var builder = new LinkedPipelineBuilder<Integer>();
+    public static void main(String[] args) throws Throwable {
+        var builder = PipelineBuilders.<Integer>createClosed();
         var pipeline = builder
                 .add((c, n) -> {
                     if (c > 0) {
@@ -131,8 +132,8 @@ public class Main {
                     System.out.println(c);
                 })
                 .build();
-        pipeline.accept(5); // <-- This call will print "5"
-        pipeline.accept(0); // <-- This call will print nothing
+        pipeline.run(5); // <-- This call will print "5"
+        pipeline.run(0); // <-- This call will print nothing
     }
 }
 ```
