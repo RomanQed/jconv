@@ -1,44 +1,24 @@
 package com.github.romanqed.jconv;
 
-import com.github.romanqed.jfunc.Runnable1;
-import com.github.romanqed.jfunc.Runnable2;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
-/**
- * An interface describing the universal pipeline builder.
- * Pipeline is a connected pipeline consisting of sequentially calling each other functions.
- * Each function is added to the end of the pipeline, and the order of execution will
- * directly depend on the order of addition.
- *
- * @param <T> the pipeline context type
- */
 public interface PipelineBuilder<T> {
+    PipelineBuilder<T> add(TaskConsumer<T> consumer);
 
-    /**
-     * Adds a function to the end of the pipeline.
-     *
-     * @param runnable pipeline function
-     * @return {@link PipelineBuilder} instance
-     */
-    PipelineBuilder<T> add(Runnable2<T, Runnable1<T>> runnable);
+    PipelineBuilder<T> prepend(TaskConsumer<T> consumer);
 
-    /**
-     * Removes the last function added to the pipeline.
-     *
-     * @return {@link PipelineBuilder} instance
-     */
+    PipelineBuilder<T> addWhen(Predicate<T> predicate, TaskConsumer<T> task);
+
+    PipelineBuilder<T> addWhen(Predicate<T> predicate, Consumer<PipelineBuilder<T>> consumer);
+
+    PipelineBuilder<T> mapWhen(Predicate<T> predicate, Task<T> task);
+
+    PipelineBuilder<T> mapWhen(Predicate<T> predicate, Consumer<PipelineBuilder<T>> consumer);
+
     PipelineBuilder<T> remove();
 
-    /**
-     * Removes all functions added to the pipeline.
-     *
-     * @return {@link PipelineBuilder} instance
-     */
     PipelineBuilder<T> clear();
 
-    /**
-     * Builds a pipeline.
-     *
-     * @return {@link Runnable1} instance, containing built pipeline
-     */
-    Runnable1<T> build();
+    Task<T> build();
 }
