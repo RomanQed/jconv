@@ -6,29 +6,33 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Abstract base implementation of {@link PipelineBuilder} based on a linked task structure.
- * Maintains an internal {@link Deque} of {@link LinkedTask} elements to form the execution chain.
+ * Abstract base implementation of {@link PipelineConfigurer} based on a linked task structure.
+ * <p>
+ * This class provides a common foundation for building configurable processing pipelines using a
+ * {@link Deque}-based structure of {@link LinkedTask} elements, supporting both unconditional
+ * and conditional task addition.
  *
- * <p>This class provides common logic for building and modifying task pipelines in a composable and conditional manner.</p>
- *
- * @param <T> the type of input processed by the pipeline
+ * @param <T> the type of data consumed by the pipeline
+ * @param <R> the self-referential type for fluent configuration
  */
 public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T>> implements PipelineConfigurer<T> {
 
     /**
-     * The deque holding the pipeline's linked tasks in execution order (LIFO).
+     * Task chain container, representing a linked structure (logical FIFO, physical LIFO).
+     * The deque head holds the most recently added task.
      */
     protected final Deque<LinkedTask<T>> deque;
 
     /**
-     * The most recent task inserted as part of a multi-step conditional configuration.
+     * Internal reference to the last task of a nested conditional block.
+     * Used to re-link the conditional segment back into the main chain.
      */
     protected LinkedTask<T> last;
 
     /**
-     * Constructs the builder with a user-supplied {@link Deque} storage.
+     * Constructs a configurer with the specified deque to be used as internal task storage.
      *
-     * @param deque the underlying deque used to build the pipeline
+     * @param deque the task container to use for pipeline construction
      */
     protected AbstractLinkedConfigurer(Deque<LinkedTask<T>> deque) {
         this.deque = deque;
@@ -36,27 +40,28 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
     }
 
     /**
-     * Creates a new builder for assembling a nested pipeline with the same abstraction level.
+     * Creates a new builder intended for full pipeline construction.
+     * Used by {@code mapWhen(...)} to create executable subpipelines.
      *
-     * @param <V> the type of input for the nested builder
+     * @param <V> the input type of the subpipeline
      * @return a new {@link PipelineBuilder} instance
      */
     protected abstract <V> PipelineBuilder<V> newBuilder();
 
     /**
-     * Creates a new internal builder for conditional configuration.
-     * This variant allows access to internal task structures.
+     * Creates a new configurer for internal conditional branches.
+     * Unlike {@code newBuilder()}, this method preserves access to the internal {@code Deque}.
      *
-     * @param <V> the type of input for the nested builder
+     * @param <V> the input type of the nested configurer
      * @return a new {@link AbstractLinkedConfigurer} instance
      */
     protected abstract <V> AbstractLinkedConfigurer<V, ? extends PipelineConfigurer<V>> newConfigurer();
 
     /**
-     * Adds a task to the front of the pipeline.
-     * Typically used for {@link #prepend(TaskConsumer)} operations.
+     * Inserts a task at the beginning (tail) of the chain.
+     * Used primarily for {@link #prepend(TaskConsumer)} operations.
      *
-     * @param task the task to add
+     * @param task the task to insert
      */
     protected void addFirst(LinkedTask<T> task) {
         if (!deque.isEmpty()) {
@@ -66,10 +71,10 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
     }
 
     /**
-     * Adds a task to the end of the pipeline.
-     * Typically used for {@link #add(TaskConsumer)} or conditional insertions.
+     * Inserts a task at the end (head) of the chain.
+     * Used for {@link #add(TaskConsumer)} or conditional segment insertion.
      *
-     * @param task the task to add
+     * @param task the task to insert
      */
     protected void addLast(LinkedTask<T> task) {
         if (!deque.isEmpty()) {
