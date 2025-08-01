@@ -2,20 +2,22 @@ package com.github.romanqed.jconv;
 
 import java.util.LinkedList;
 
-public final class PipelineLinkedBuilder<T> extends AbstractLinkedBuilder<T> {
+public final class LinkedPipelineBuilder<T>
+        extends AbstractLinkedConfigurer<T, PipelineBuilder<T>>
+        implements PipelineBuilder<T> {
 
-    public PipelineLinkedBuilder() {
+    public LinkedPipelineBuilder() {
         super(new LinkedList<>());
     }
 
     @Override
     protected <V> PipelineBuilder<V> newBuilder() {
-        return new PipelineLinkedBuilder<>();
+        return new LinkedPipelineBuilder<>();
     }
 
     @Override
-    protected <V> AbstractLinkedBuilder<V> newInternalBuilder() {
-        return new InternalLinkedBuilder<>();
+    protected <V> AbstractLinkedConfigurer<V, ? extends PipelineConfigurer<V>> newConfigurer() {
+        return new LinkedPipelineConfigurer<>();
     }
 
     @Override

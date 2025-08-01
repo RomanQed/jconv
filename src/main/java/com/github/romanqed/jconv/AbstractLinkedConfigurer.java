@@ -13,7 +13,8 @@ import java.util.function.Predicate;
  *
  * @param <T> the type of input processed by the pipeline
  */
-public abstract class AbstractLinkedBuilder<T> implements PipelineBuilder<T> {
+public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T>> implements PipelineConfigurer<T> {
+
     /**
      * The deque holding the pipeline's linked tasks in execution order (LIFO).
      */
@@ -29,7 +30,7 @@ public abstract class AbstractLinkedBuilder<T> implements PipelineBuilder<T> {
      *
      * @param deque the underlying deque used to build the pipeline
      */
-    protected AbstractLinkedBuilder(Deque<LinkedTask<T>> deque) {
+    protected AbstractLinkedConfigurer(Deque<LinkedTask<T>> deque) {
         this.deque = deque;
         this.last = null;
     }
@@ -47,9 +48,9 @@ public abstract class AbstractLinkedBuilder<T> implements PipelineBuilder<T> {
      * This variant allows access to internal task structures.
      *
      * @param <V> the type of input for the nested builder
-     * @return a new {@link AbstractLinkedBuilder} instance
+     * @return a new {@link AbstractLinkedConfigurer} instance
      */
-    protected abstract <V> AbstractLinkedBuilder<V> newInternalBuilder();
+    protected abstract <V> AbstractLinkedConfigurer<V, ? extends PipelineConfigurer<V>> newConfigurer();
 
     /**
      * Adds a task to the front of the pipeline.
@@ -82,79 +83,87 @@ public abstract class AbstractLinkedBuilder<T> implements PipelineBuilder<T> {
     }
 
     @Override
-    public PipelineBuilder<T> add(TaskConsumer<T> consumer) {
+    @SuppressWarnings("unchecked")
+    public R add(TaskConsumer<T> consumer) {
         Objects.requireNonNull(consumer);
         addLast(new LinkedTask<>(consumer));
-        return this;
+        return (R) this;
     }
 
     @Override
-    public PipelineBuilder<T> prepend(TaskConsumer<T> consumer) {
+    @SuppressWarnings("unchecked")
+    public R prepend(TaskConsumer<T> consumer) {
         Objects.requireNonNull(consumer);
         addFirst(new LinkedTask<>(consumer));
-        return this;
+        return (R) this;
     }
 
     @Override
-    public PipelineBuilder<T> addWhen(Predicate<T> predicate, TaskConsumer<T> task) {
+    @SuppressWarnings("unchecked")
+    public R addWhen(Predicate<T> predicate, TaskConsumer<T> task) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(task);
         addLast(new LinkedTask<>(new CondConsumer<>(predicate, task)));
-        return this;
+        return (R) this;
     }
 
     @Override
-    public PipelineBuilder<T> addWhen(Predicate<T> predicate, Consumer<PipelineConfigurer<T>> consumer) {
+    @SuppressWarnings("unchecked")
+    public R addWhen(Predicate<T> predicate, Consumer<PipelineConfigurer<T>> consumer) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(consumer);
-        var builder = this.<T>newInternalBuilder();
-        consumer.accept(builder);
-        var deque = builder.deque;
+        var configurer = this.<T>newConfigurer();
+        consumer.accept(configurer);
+        var deque = configurer.deque;
         if (deque.isEmpty()) {
             addLast(new LinkedTask<>(new SingleCondConsumer<>(predicate)));
-            return this;
+            return (R) this;
         }
         var task = new TaskCondConsumer<>(predicate, deque.peekLast());
         addLast(new LinkedTask<>(task));
-        last = builder.last == null ? deque.peek() : builder.last;
-        return this;
+        last = configurer.last == null ? deque.peek() : configurer.last;
+        return (R) this;
     }
 
     @Override
-    public PipelineBuilder<T> mapWhen(Predicate<T> predicate, Task<T> task) {
+    @SuppressWarnings("unchecked")
+    public R mapWhen(Predicate<T> predicate, Task<T> task) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(task);
         addLast(new LinkedTask<>(new TaskCondConsumer<>(predicate, task)));
-        return this;
+        return (R) this;
     }
 
     @Override
-    public PipelineBuilder<T> mapWhen(Predicate<T> predicate, Consumer<PipelineConfigurer<T>> consumer) {
+    @SuppressWarnings("unchecked")
+    public R mapWhen(Predicate<T> predicate, Consumer<PipelineConfigurer<T>> consumer) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(consumer);
         var builder = this.<T>newBuilder();
         consumer.accept(builder);
         var task = builder.build();
         addLast(new LinkedTask<>(new TaskCondConsumer<>(predicate, task)));
-        return this;
+        return (R) this;
     }
 
     @Override
-    public PipelineBuilder<T> remove() {
+    @SuppressWarnings("unchecked")
+    public R remove() {
         if (deque.isEmpty()) {
-            return this;
+            return (R) this;
         }
         deque.pop();
         if (deque.isEmpty()) {
-            return this;
+            return (R) this;
         }
         deque.peek().resetNext();
-        return this;
+        return (R) this;
     }
 
     @Override
-    public PipelineBuilder<T> clear() {
+    @SuppressWarnings("unchecked")
+    public R clear() {
         deque.clear();
-        return this;
+        return (R) this;
     }
 }
