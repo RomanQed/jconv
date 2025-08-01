@@ -4,8 +4,10 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
+ * Extends {@link PipelineConfigurer} by providing the ability to compile
+ * the configured pipeline into an executable {@link Task}.
  *
- * @param <T>
+ * @param <T> the input type processed by the pipeline
  */
 public interface PipelineBuilder<T> extends PipelineConfigurer<T> {
 
@@ -33,5 +35,10 @@ public interface PipelineBuilder<T> extends PipelineConfigurer<T> {
     @Override
     PipelineBuilder<T> clear();
 
+    /**
+     * Finalizes and compiles the current pipeline configuration into a reusable task.
+     *
+     * @return the composed task representing the pipeline
+     */
     Task<T> build();
 }
