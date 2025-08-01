@@ -59,7 +59,7 @@ public abstract class AbstractLinkedBuilder<T> implements PipelineBuilder<T> {
     }
 
     @Override
-    public PipelineBuilder<T> addWhen(Predicate<T> predicate, Consumer<PipelineBuilder<T>> consumer) {
+    public PipelineBuilder<T> addWhen(Predicate<T> predicate, Consumer<PipelineConfigurer<T>> consumer) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(consumer);
         var builder = this.<T>newInternalBuilder();
@@ -84,7 +84,7 @@ public abstract class AbstractLinkedBuilder<T> implements PipelineBuilder<T> {
     }
 
     @Override
-    public PipelineBuilder<T> mapWhen(Predicate<T> predicate, Consumer<PipelineBuilder<T>> consumer) {
+    public PipelineBuilder<T> mapWhen(Predicate<T> predicate, Consumer<PipelineConfigurer<T>> consumer) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(consumer);
         var builder = this.<T>newBuilder();
