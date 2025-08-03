@@ -18,11 +18,6 @@ public interface AsyncTask<T> extends Task<T> {
     }
 
     @Override
-    default boolean isSync() {
-        return false;
-    }
-
-    @Override
     default boolean isAsync() {
         return true;
     }

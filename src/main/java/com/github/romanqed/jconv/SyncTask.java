@@ -24,11 +24,6 @@ public interface SyncTask<T> extends Task<T> {
     }
 
     @Override
-    default boolean isAsync() {
-        return false;
-    }
-
-    @Override
     default boolean isUni() {
         return false;
     }

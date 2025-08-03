@@ -18,11 +18,6 @@ public interface AsyncTaskConsumer<T> extends TaskConsumer<T> {
     }
 
     @Override
-    default boolean isSync() {
-        return false;
-    }
-
-    @Override
     default boolean isAsync() {
         return true;
     }

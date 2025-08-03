@@ -24,11 +24,6 @@ public interface SyncTaskConsumer<T> extends TaskConsumer<T> {
     }
 
     @Override
-    default boolean isAsync() {
-        return false;
-    }
-
-    @Override
     default boolean isUni() {
         return false;
     }
