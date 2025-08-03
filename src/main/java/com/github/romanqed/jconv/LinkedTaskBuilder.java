@@ -3,7 +3,7 @@ package com.github.romanqed.jconv;
 import java.util.LinkedList;
 
 /**
- * A concrete {@link PipelineBuilder} implementation that uses a linked structure
+ * A concrete {@link TaskBuilder} implementation that uses a linked structure
  * to compose and manage task pipelines.
  *
  * <p>This class extends {@link AbstractLinkedConfigurer} and provides full support for pipeline
@@ -14,25 +14,25 @@ import java.util.LinkedList;
  *
  * @param <T> the type of input processed by the pipeline
  */
-public final class LinkedPipelineBuilder<T>
-        extends AbstractLinkedConfigurer<T, PipelineBuilder<T>>
-        implements PipelineBuilder<T> {
+public final class LinkedTaskBuilder<T>
+        extends AbstractLinkedConfigurer<T, TaskBuilder<T>>
+        implements TaskBuilder<T> {
 
     /**
      * Constructs a new, empty pipeline builder.
      */
-    public LinkedPipelineBuilder() {
+    public LinkedTaskBuilder() {
         super(new LinkedList<>());
     }
 
     @Override
-    protected <V> PipelineBuilder<V> newBuilder() {
-        return new LinkedPipelineBuilder<>();
+    protected <V> TaskBuilder<V> newBuilder() {
+        return new LinkedTaskBuilder<>();
     }
 
     @Override
-    protected <V> AbstractLinkedConfigurer<V, ? extends PipelineConfigurer<V>> newConfigurer() {
-        return new LinkedPipelineConfigurer<>();
+    protected <V> AbstractLinkedConfigurer<V, ? extends TaskConfigurer<V>> newConfigurer() {
+        return new LinkedTaskConfigurer<>();
     }
 
     @Override

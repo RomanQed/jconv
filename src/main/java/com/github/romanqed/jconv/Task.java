@@ -1,68 +1,57 @@
 package com.github.romanqed.jconv;
 
 import com.github.romanqed.jfunc.Exceptions;
-import com.github.romanqed.jfunc.Runnable1;
+import com.github.romanqed.juni.UniRunnable1;
 
-import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
-/**
- * A functional task that accepts an input and may throw an exception during execution.
- *
- * @param <T> the type of the input
- */
-@FunctionalInterface
-public interface Task<T> extends Runnable1<T> {
+public interface Task<T> extends UniRunnable1<T> {
 
-    /**
-     * A no-op task instance.
-     */
     @SuppressWarnings("rawtypes")
-    Task EMPTY = v -> {};
+    Task EMPTY = new Task() {
 
-    /**
-     * Returns a no-op task.
-     *
-     * @param <T> the input type
-     * @return an empty task
-     */
+        @Override
+        public void run(Object o) {
+            // Do nothing
+        }
+
+        @Override
+        public CompletableFuture<Void> runAsync(Object o) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        @Override
+        public boolean isSync() {
+            return true;
+        }
+
+        @Override
+        public boolean isAsync() {
+            return true;
+        }
+
+        @Override
+        public boolean isUni() {
+            return true;
+        }
+    };
+
     @SuppressWarnings("unchecked")
     static <T> Task<T> empty() {
         return EMPTY;
     }
 
-    /**
-     * Executes this task with the specified input.
-     *
-     * @param t the input
-     * @throws Throwable if any error occurs
-     */
     @Override
     void run(T t) throws Throwable;
 
-    /**
-     * Executes the task and rethrows any checked exception as unchecked.
-     *
-     * @param t the input
-     */
+    @Override
+    CompletableFuture<Void> runAsync(T t);
+
     default void accept(T t) {
         try {
             run(t);
         } catch (Throwable e) {
             Exceptions.throwAny(e);
         }
-    }
-
-    /**
-     * Chains this task with another, executing them in sequence.
-     *
-     * @param func the task to execute after this one
-     * @return a composed task
-     */
-    default Task<T> andThen(Task<T> func) {
-        Objects.requireNonNull(func);
-        return t -> {
-            run(t);
-            func.run(t);
-        };
     }
 }

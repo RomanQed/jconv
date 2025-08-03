@@ -1,5 +1,6 @@
 package com.github.romanqed.jconv;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 
 final class TaskCondConsumer<T> implements TaskConsumer<T> {
@@ -18,5 +19,32 @@ final class TaskCondConsumer<T> implements TaskConsumer<T> {
         } else {
             task.run(t);
         }
+    }
+
+    @Override
+    public CompletableFuture<Void> runAsync(T t, Task<T> task) {
+        try {
+            if (predicate.test(t)) {
+                return when.runAsync(t);
+            }
+            return task.runAsync(t);
+        } catch (Throwable e) {
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
+    @Override
+    public boolean isSync() {
+        return when.isSync();
+    }
+
+    @Override
+    public boolean isAsync() {
+        return when.isAsync();
+    }
+
+    @Override
+    public boolean isUni() {
+        return when.isUni();
     }
 }

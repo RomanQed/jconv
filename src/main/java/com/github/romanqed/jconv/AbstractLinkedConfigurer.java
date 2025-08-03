@@ -1,12 +1,14 @@
 package com.github.romanqed.jconv;
 
 import java.util.Deque;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Abstract base implementation of {@link PipelineConfigurer} based on a linked task structure.
+ * Abstract base implementation of {@link TaskConfigurer} based on a linked task structure.
  * <p>
  * This class provides a common foundation for building configurable processing pipelines using a
  * {@link Deque}-based structure of {@link LinkedTask} elements, supporting both unconditional
@@ -15,7 +17,7 @@ import java.util.function.Predicate;
  * @param <T> the type of data consumed by the pipeline
  * @param <R> the self-referential type for fluent configuration
  */
-public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T>> implements PipelineConfigurer<T> {
+public abstract class AbstractLinkedConfigurer<T, R extends TaskConfigurer<T>> implements TaskConfigurer<T> {
 
     /**
      * Task chain container, representing a linked structure (logical FIFO, physical LIFO).
@@ -23,11 +25,9 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
      */
     protected final Deque<LinkedTask<T>> deque;
 
-    /**
-     * Internal reference to the last task of a nested conditional block.
-     * Used to re-link the conditional segment back into the main chain.
-     */
     protected LinkedTask<T> last;
+
+    protected List<LinkedTask<T>> lastList;
 
     /**
      * Constructs a configurer with the specified deque to be used as internal task storage.
@@ -44,9 +44,9 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
      * Used by {@code mapWhen(...)} to create executable subpipelines.
      *
      * @param <V> the input type of the subpipeline
-     * @return a new {@link PipelineBuilder} instance
+     * @return a new {@link TaskBuilder} instance
      */
-    protected abstract <V> PipelineBuilder<V> newBuilder();
+    protected abstract <V> TaskBuilder<V> newBuilder();
 
     /**
      * Creates a new configurer for internal conditional branches.
@@ -55,7 +55,7 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
      * @param <V> the input type of the nested configurer
      * @return a new {@link AbstractLinkedConfigurer} instance
      */
-    protected abstract <V> AbstractLinkedConfigurer<V, ? extends PipelineConfigurer<V>> newConfigurer();
+    protected abstract <V> AbstractLinkedConfigurer<V, ? extends TaskConfigurer<V>> newConfigurer();
 
     /**
      * Inserts a task at the beginning (tail) of the chain.
@@ -65,7 +65,7 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
      */
     protected void addFirst(LinkedTask<T> task) {
         if (!deque.isEmpty()) {
-            task.next = deque.peekLast();
+            task.setNext(deque.peekLast());
         }
         deque.addLast(task);
     }
@@ -78,10 +78,15 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
      */
     protected void addLast(LinkedTask<T> task) {
         if (!deque.isEmpty()) {
-            deque.peek().next = task;
+            deque.peek().setNext(task);
             if (last != null) {
-                last.next = task;
+                last.setNext(task);
                 last = null;
+            } else if (lastList != null) {
+                for (var item : lastList) {
+                    item.setNext(task);
+                }
+                lastList = null;
             }
         }
         deque.push(task);
@@ -114,7 +119,7 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
 
     @Override
     @SuppressWarnings("unchecked")
-    public R addWhen(Predicate<T> predicate, Consumer<PipelineConfigurer<T>> consumer) {
+    public R addWhen(Predicate<T> predicate, Consumer<TaskConfigurer<T>> consumer) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(consumer);
         var configurer = this.<T>newConfigurer();
@@ -126,7 +131,16 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
         }
         var task = new TaskCondConsumer<>(predicate, deque.peekLast());
         addLast(new LinkedTask<>(task));
-        last = configurer.last == null ? deque.peek() : configurer.last;
+        if (configurer.lastList != null) {
+            lastList = configurer.lastList;
+            lastList.add(deque.peek());
+        } else if (configurer.last != null) {
+            lastList = new LinkedList<>();
+            lastList.add(configurer.last);
+            lastList.add(deque.peek());
+        } else {
+            last = deque.peek();
+        }
         return (R) this;
     }
 
@@ -141,7 +155,7 @@ public abstract class AbstractLinkedConfigurer<T, R extends PipelineConfigurer<T
 
     @Override
     @SuppressWarnings("unchecked")
-    public R mapWhen(Predicate<T> predicate, Consumer<PipelineConfigurer<T>> consumer) {
+    public R mapWhen(Predicate<T> predicate, Consumer<TaskConfigurer<T>> consumer) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(consumer);
         var builder = this.<T>newBuilder();

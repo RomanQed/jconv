@@ -1,5 +1,7 @@
 package com.github.romanqed.jconv;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * A composable {@link Task} implementation that wraps a {@link TaskConsumer} and delegates execution
  * to a downstream {@link Task}, forming a linked processing chain.
@@ -48,5 +50,25 @@ public final class LinkedTask<T> implements Task<T> {
     @Override
     public void run(T t) throws Throwable {
         body.run(t, next);
+    }
+
+    @Override
+    public CompletableFuture<Void> runAsync(T t) {
+        return body.runAsync(t, next);
+    }
+
+    @Override
+    public boolean isAsync() {
+        return body.isAsync() && next.isAsync();
+    }
+
+    @Override
+    public boolean isSync() {
+        return body.isSync() && next.isSync();
+    }
+
+    @Override
+    public boolean isUni() {
+        return body.isUni() && next.isUni();
     }
 }

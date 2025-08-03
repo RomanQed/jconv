@@ -36,7 +36,7 @@ dependencies {
 ### Common example
 
 ```Java
-import com.github.romanqed.jconv.PipelineBuilders;
+import com.github.romanqed.jconv.TaskBuilders;
 
 public class Main {
     public static void main(String[] args) throws Throwable {
@@ -76,7 +76,7 @@ This example will print
 ### Exception handling
 
 ```Java
-import com.github.romanqed.jconv.PipelineBuilders;
+import com.github.romanqed.jconv.TaskBuilders;
 
 import java.io.IOException;
 
@@ -117,7 +117,7 @@ java.io.IOException
 ### Short-circuiting
 
 ```Java
-import com.github.romanqed.jconv.PipelineBuilders;
+import com.github.romanqed.jconv.TaskBuilders;
 
 public class Main {
     public static void main(String[] args) throws Throwable {
