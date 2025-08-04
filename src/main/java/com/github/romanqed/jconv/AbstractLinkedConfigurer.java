@@ -26,12 +26,12 @@ public abstract class AbstractLinkedConfigurer<T, R extends TaskConfigurer<T>> i
     protected final Deque<LinkedTask<T>> deque;
 
     /**
-     * TODO
+     * Holds the last linked task that was added and may require a follow-up connection.
      */
     protected LinkedTask<T> last;
 
     /**
-     * TODO
+     * Holds the list of tasks from a conditional branch that need to be connected to the next task.
      */
     protected List<LinkedTask<T>> lastList;
 

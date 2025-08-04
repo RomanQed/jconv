@@ -5,16 +5,21 @@ import com.github.romanqed.jfunc.Exceptions;
 import java.util.concurrent.CompletableFuture;
 
 /**
+ * A {@link Task} that is designed to be executed synchronously.
  *
- * @param <T>
+ * <p>Its {@link #runAsync(Object)} method wraps synchronous execution inside a {@link CompletableFuture}.</p>
+ *
+ * @param <T> the input type
  */
 @FunctionalInterface
 public interface SyncTask<T> extends Task<T> {
 
     /**
+     * Executes this task asynchronously by wrapping its synchronous {@link #run(Object)} method
+     * in a {@link CompletableFuture}. Any thrown exception is rethrown as unchecked.
      *
      * @param t the input argument
-     * @return
+     * @return a {@link CompletableFuture} representing the completion of the task
      */
     @Override
     default CompletableFuture<Void> runAsync(T t) {
@@ -28,8 +33,9 @@ public interface SyncTask<T> extends Task<T> {
     }
 
     /**
+     * Indicates that this task is synchronous by nature.
      *
-     * @return
+     * @return {@code true}
      */
     @Override
     default boolean isSync() {
@@ -37,8 +43,9 @@ public interface SyncTask<T> extends Task<T> {
     }
 
     /**
+     * Indicates that this task is not a unified task (as it only natively supports sync execution).
      *
-     * @return
+     * @return {@code false}
      */
     @Override
     default boolean isUni() {
