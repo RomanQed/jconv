@@ -1,70 +1,74 @@
-# jconv [![maven-central](https://img.shields.io/maven-central/v/com.github.romanqed/jconv?color=blue)](https://repo1.maven.org/maven2/com/github/romanqed/jconv/)
+# jconv [![jconv](https://img.shields.io/maven-central/v/com.github.romanqed/jconv?strategy=releaseProperty&style=for-the-badge&label=jconv&color=blue)](https://repo1.maven.org/maven2/com/github/romanqed/jconv)
 
-Flexible and lightweight pipeline implementation for java 11+ in style ASP.NET middleware.
+Flexible and lightweight pipeline implementation for Java 11+, inspired by ASP.NET middleware design.
+
+## Features
+
+- Fluent API to build conditional and nested middleware pipelines
+- Supports synchronous, asynchronous, and unified task consumers
+- Zero-overhead design suitable for high-performance scenarios
+- Clear separation between middleware (TaskConsumer) and terminal tasks (Task)
+- Conditional branching with `addWhen` (like ASP.NET UseWhen) and `mapWhen` (like ASP.NET MapWhen)
+- Easy integration with Java CompletableFuture for async execution
 
 ## Getting Started
 
-To install it, you will need:
+### Requirements
 
-* java 11+
-* Maven/Gradle
+- Java 11 or higher
+- Maven or Gradle build system
 
-### Features
+## Installation
 
-## Installing
+### Gradle
 
-### Gradle dependency
-
-```Groovy
+```groovy
 dependencies {
-    implementation group: 'com.github.romanqed', name: 'jconv', version: 'LATEST'
+    implementation group: 'com.github.romanqed', name: 'jconv', version: '2.0.0'
 }
 ```
 
-### Maven dependency
+### Maven
 
-```
+```xml
 <dependency>
     <groupId>com.github.romanqed</groupId>
     <artifactId>jconv</artifactId>
-    <version>LATEST</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
-## Example
+## Usage Examples
 
-### Common example
+### Basic Middleware Pipeline
 
-```Java
+```java
 import com.github.romanqed.jconv.TaskBuilders;
 
 public class Main {
     public static void main(String[] args) throws Throwable {
-        var builder = PipelineBuilders.<Integer>createClosed();
+        var builder = TaskBuilders.<Integer>linked();
         var pipeline = builder
-                // The code below will be executed inside the pipeline in the following order:
-                .add((c, n) -> {
-                    System.out.println("{ - 1"); // 1
-                    n.run(c);
-                    System.out.println("} - 4"); // 4
+                .add((c, next) -> {
+                    System.out.println("{ - 1");
+                    next.run(c);
+                    System.out.println("} - 4");
                 })
-                .add((c, n) -> {
-                    System.out.println(c + " - 2"); // 2
-                    n.run(c - 1);
+                .add((c, next) -> {
+                    System.out.println(c + " - 2");
+                    next.run(c - 1);
                 })
-                .add((c, n) -> {
-                    System.out.println(c + " - 3"); // 3
-                })
-                .add((c, n) -> {
-                    System.out.println(c); // This code will never be executed
+                .add((c, next) -> {
+                    System.out.println(c + " - 3");
                 })
                 .build();
+
         pipeline.run(10);
     }
 }
 ```
 
-This example will print
+Output:
 
 ```
 { - 1
@@ -73,83 +77,127 @@ This example will print
 } - 4
 ```
 
-### Exception handling
+### Exception Handling in Pipeline
 
 ```Java
 import com.github.romanqed.jconv.TaskBuilders;
-
 import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) throws Throwable {
-        var builder = PipelineBuilders.createClosed();
+        var builder = TaskBuilders.<Object>linked();
         var pipeline = builder
-                .add((c, n) -> {
+                .add((ctx, next) -> {
                     try {
-                        n.run(null);
+                        next.run(ctx);
                     } catch (IOException e) {
-                        System.out.println("Catch IO exception: ");
+                        System.out.println("Caught IOException:");
                         e.printStackTrace();
                     }
                 })
-                .add((c, n) -> {
-                    var io = new IOException();
-                    throw new IOException(); // Some I/O problem occurs here
+                .add((ctx, next) -> {
+                    throw new IOException("Simulated I/O error");
                 })
                 .build();
+
         pipeline.run(null);
     }
 }
 ```
 
-This example will print
+Output:
 
 ```
-Catch IO exception: 
-java.io.IOException
-	at Main.lambda$main$1(Main.java:20)
-	at com.github.romanqed.jconv/com.github.romanqed.jconv.LinkedRunnable.run(LinkedRunnable.java:26)
-	at Main.lambda$main$0(Main.java:13)
-	at com.github.romanqed.jconv/com.github.romanqed.jconv.LinkedRunnable.run(LinkedRunnable.java:26)
-	at Main.main(Main.java:23)
+Caught IOException:
+java.io.IOException: Simulated I/O error
+    at Main.lambda$main$1(Main.java:...)
+    ...
 ```
 
-### Short-circuiting
+### Short-Circuiting Execution
 
 ```Java
 import com.github.romanqed.jconv.TaskBuilders;
 
 public class Main {
     public static void main(String[] args) throws Throwable {
-        var builder = PipelineBuilders.<Integer>createClosed();
+        var builder = TaskBuilders.<Integer>linked();
         var pipeline = builder
-                .add((c, n) -> {
+                .add((c, next) -> {
                     if (c > 0) {
-                        n.run(c);
-                    }
+                        next.run(c);
+                    } // else short-circuit: do nothing, next tasks won't run
                 })
-                .add((c, n) -> {
-                    System.out.println(c);
+                .add((c, next) -> {
+                    System.out.println("Processed: " + c);
                 })
                 .build();
-        pipeline.run(5); // <-- This call will print "5"
-        pipeline.run(0); // <-- This call will print nothing
+
+        pipeline.run(5);  // Prints "Processed: 5"
+        pipeline.run(0);  // Prints nothing
     }
 }
 ```
 
+### Conditional Branching with addWhen (like UseWhen)
+
+```java
+var pipeline = TaskBuilders.<String>linked()
+    .addWhen(s -> s.startsWith("admin"), b -> {
+        b.add((s, next) -> {
+            System.out.println("Admin branch: " + s);
+            next.run(s);
+        });
+    })
+    .add((s, next) -> {
+        System.out.println("Common branch: " + s);
+    })
+    .build();
+
+pipeline.run("adminUser");  // Prints both Admin branch and Common branch messages
+pipeline.run("guestUser");  // Prints only Common branch message
+```
+
+### Conditional Branching with mapWhen (like MapWhen)
+
+```java
+var pipeline = TaskBuilders.<String>linked()
+    .mapWhen(s -> s.startsWith("admin"), (s) -> {
+        System.out.println("Admin mapped branch: " + s);
+    })
+    .add((s, next) -> {
+        System.out.println("Common branch: " + s);
+    })
+    .build();
+
+pipeline.run("adminUser");  // Prints only Admin mapped branch message
+pipeline.run("guestUser");  // Prints only Common branch message
+```
+
+Note: `mapWhen` replaces the pipeline if condition is true, short-circuiting subsequent middleware.
+
+## API Overview
+
+- **Task<T>** — terminal unit of work (sync, async or unified)
+- **TaskConsumer<T>** — middleware consumer that can delegate downstream
+- **TaskConfigurer<T>** — fluent interface for building pipeline steps
+- **TaskBuilder<T>** — interface to assemble and build pipelines
+- **TaskBuilders** — factory for creating pipeline builders (e.g., linked)
+
 ## Built With
 
 * [Gradle](https://gradle.org) - Dependency management
-* [jfunc](https://github.com/RomanQed/jfunc) - Lambda interfaces
+* [jfunc](https://github.com/RomanQed/jfunc) - Functional interfaces and utilities
+* [jsync](https://github.com/RomanQed/jfunc) - Async functional interfaces and helpers
+* [juni](https://github.com/RomanQed/jfunc) - Unified sync/async interfaces
 
 ## Authors
 
-* **[RomanQed](https://github.com/RomanQed)** - *Main work*
+* **[RomanQed](https://github.com/RomanQed)** - Main author
 
 See also the list of [contributors](https://github.com/RomanQed/jconv/contributors)
 who participated in this project.
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details
+This project is licensed under the Apache License 2.0 — see the [LICENSE](LICENSE) file for details
