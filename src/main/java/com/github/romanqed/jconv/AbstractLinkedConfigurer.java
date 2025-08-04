@@ -25,8 +25,14 @@ public abstract class AbstractLinkedConfigurer<T, R extends TaskConfigurer<T>> i
      */
     protected final Deque<LinkedTask<T>> deque;
 
+    /**
+     * TODO
+     */
     protected LinkedTask<T> last;
 
+    /**
+     * TODO
+     */
     protected List<LinkedTask<T>> lastList;
 
     /**

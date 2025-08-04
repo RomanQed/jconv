@@ -19,10 +19,20 @@ public interface TaskConfigurer<T> {
      */
     TaskConfigurer<T> add(TaskConsumer<T> consumer);
 
+    /**
+     *
+     * @param consumer
+     * @return
+     */
     default TaskConfigurer<T> add(SyncTaskConsumer<T> consumer) {
         return add((TaskConsumer<T>) consumer);
     }
 
+    /**
+     *
+     * @param consumer
+     * @return
+     */
     default TaskConfigurer<T> add(AsyncTaskConsumer<T> consumer) {
         return add((TaskConsumer<T>) consumer);
     }
@@ -35,10 +45,20 @@ public interface TaskConfigurer<T> {
      */
     TaskConfigurer<T> prepend(TaskConsumer<T> consumer);
 
+    /**
+     *
+     * @param consumer
+     * @return
+     */
     default TaskConfigurer<T> prepend(SyncTaskConsumer<T> consumer) {
         return prepend((TaskConsumer<T>) consumer);
     }
 
+    /**
+     *
+     * @param consumer
+     * @return
+     */
     default TaskConfigurer<T> prepend(AsyncTaskConsumer<T> consumer) {
         return prepend((TaskConsumer<T>) consumer);
     }
@@ -52,10 +72,22 @@ public interface TaskConfigurer<T> {
      */
     TaskConfigurer<T> addWhen(Predicate<T> predicate, TaskConsumer<T> task);
 
+    /**
+     *
+     * @param predicate
+     * @param task
+     * @return
+     */
     default TaskConfigurer<T> addWhen(Predicate<T> predicate, SyncTaskConsumer<T> task) {
         return addWhen(predicate, (TaskConsumer<T>) task);
     }
 
+    /**
+     *
+     * @param predicate
+     * @param task
+     * @return
+     */
     default TaskConfigurer<T> addWhen(Predicate<T> predicate, AsyncTaskConsumer<T> task) {
         return addWhen(predicate, (TaskConsumer<T>) task);
     }
@@ -78,10 +110,22 @@ public interface TaskConfigurer<T> {
      */
     TaskConfigurer<T> mapWhen(Predicate<T> predicate, Task<T> task);
 
+    /**
+     *
+     * @param predicate
+     * @param task
+     * @return
+     */
     default TaskConfigurer<T> mapWhen(Predicate<T> predicate, SyncTask<T> task) {
         return mapWhen(predicate, (Task<T>) task);
     }
 
+    /**
+     *
+     * @param predicate
+     * @param task
+     * @return
+     */
     default TaskConfigurer<T> mapWhen(Predicate<T> predicate, AsyncTask<T> task) {
         return mapWhen(predicate, (Task<T>) task);
     }
